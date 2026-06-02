@@ -2,7 +2,7 @@ name: Publicación automática en canal
 
 on:
   schedule:
-    # Lunes 17:00 UTC = 17:00 Canarias (UTC+0 en invierno, UTC+1 en verano)
+    # Lunes 17:00 UTC = 17:00 Canarias (UTC+0 en invierno, UTC+1 en verano → ajusta si necesitas)
     - cron: "0 17 * * 1"
     # Miércoles 17:00 UTC
     - cron: "0 17 * * 3"

@@ -19,6 +19,7 @@ async def main() -> None:
         print("ERROR: TELEGRAM_BOT_TOKEN y CHANNEL_ID son obligatorios")
         sys.exit(1)
 
+    # Import here to keep the script self-contained
     from telegram import Bot
     from bot.data.scheduled_messages import get_message_for_today
 
