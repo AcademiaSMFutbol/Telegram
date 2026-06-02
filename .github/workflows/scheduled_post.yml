@@ -1,0 +1,58 @@
+name: Publicación automática en canal
+
+on:
+  schedule:
+    # Lunes 17:00 UTC = 17:00 Canarias (UTC+0 en invierno, UTC+1 en verano)
+    - cron: "0 17 * * 1"
+    # Miércoles 17:00 UTC
+    - cron: "0 17 * * 3"
+    # Viernes 16:30 UTC
+    - cron: "30 16 * * 5"
+  workflow_dispatch:
+    inputs:
+      mensaje_manual:
+        description: "Mensaje personalizado (deja vacío para el mensaje del día)"
+        required: false
+        default: ""
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Instalar dependencias
+        run: pip install python-telegram-bot python-dotenv
+
+      - name: Publicar mensaje del día
+        if: ${{ github.event.inputs.mensaje_manual == '' }}
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
+        run: python scripts/scheduled_post.py
+
+      - name: Publicar mensaje manual
+        if: ${{ github.event.inputs.mensaje_manual != '' }}
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
+          MENSAJE: ${{ github.event.inputs.mensaje_manual }}
+        run: |
+          python - <<'EOF'
+          import asyncio, os
+          from telegram import Bot
+          async def main():
+              bot = Bot(token=os.environ["TELEGRAM_BOT_TOKEN"])
+              await bot.send_message(
+                  chat_id=os.environ["CHANNEL_ID"],
+                  text=os.environ["MENSAJE"],
+                  parse_mode="HTML"
+              )
+              print("Publicado.")
+          asyncio.run(main())
+          EOF
